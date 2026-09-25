@@ -1,22 +1,42 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Switch } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, Switch, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useIoT } from '../../context/IoTContext';
 
-
-
 export default function DashboardScreen() {
-    // const [deviceStatus, setDeviceStatus] = useState(
-    //     devices.reduce((acc, device) => {
-    //         acc[device.id] = device.status;
-    //         return acc;
-    //     }, {} as Record<number, boolean>)
-    // );
 
-    const { devices, 
-        sensors, 
-        toggleDevice } = useIoT();
+    const {
+        devices,
+        sensors,
+        toggleDevice,
+        loading,
+        gatewayConnected,
+        refresh,
+    } = useIoT();
 
+    if (loading) {
+        return (
+            <View style={[styles.container, styles.centered]}>
+                <ActivityIndicator size="large" />
+                <Text style={{ marginTop: 12 }}>Loading dashboard...</Text>
+            </View>
+        );
+    }
+
+    if (!sensors) {
+    return (
+        <View style={[styles.container, styles.centered]}>
+            <Text>
+                {gatewayConnected
+                    ? 'No sensor data available.'
+                    : 'Gateway disconnected — unable to load sensor data.'}
+            </Text>
+            <TouchableOpacity onPress={refresh} style={{ marginTop: 12 }}>
+                <Text style={{ color: 'blue' }}>Retry</Text>
+            </TouchableOpacity>
+        </View>
+    );
+}
     return (
         <View style={styles.container}>
 
@@ -70,33 +90,6 @@ export default function DashboardScreen() {
                 Device Status
             </Text>
 
-            {/* <View style={styles.deviceCard}>
-
-                <View style={styles.deviceInfo}>
-                    <Text style={styles.deviceIcon}>
-                        💡
-                    </Text>
-
-                    <View>
-                        <Text style={styles.deviceName}>
-                            Living Room Light
-                        </Text>
-
-                        <Text style={styles.deviceType}>
-                            Smart Light
-                        </Text>
-                    </View>
-                </View>
-
-                <Text style={styles.deviceStatus}>
-                    ON
-                </Text>
-
-            </View>
-
-        </View>
-    ); */}
-
             {devices.map((device) => (
 
                 <View
@@ -128,6 +121,7 @@ export default function DashboardScreen() {
 
                     <Switch
                         value={device.status}
+                        disabled={!gatewayConnected}
                         onValueChange={(value) => {
                             toggleDevice(device.id, value);
                         }}
@@ -145,6 +139,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
+    },
+
+    centered: {
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 
     greeting: {
@@ -227,9 +226,8 @@ const styles = StyleSheet.create({
         gap: 6,
     },
 
-    deviceState:{
+    deviceState: {
 
-    }
-
+    },
 
 });
