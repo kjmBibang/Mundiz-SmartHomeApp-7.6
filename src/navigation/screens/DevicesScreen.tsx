@@ -17,6 +17,8 @@ export default function DevicesScreen() {
   const {
     devices,
     toggleDevice,
+    gatewayConnected,
+    pendingDeviceIds,
   } = useIoT();
 
   return (
@@ -65,9 +67,13 @@ export default function DevicesScreen() {
             </View>
 
           </View>
+          {pendingDeviceIds.includes(device.id) && (
+            <Text style={styles.updatingText}>Updating...</Text>
+          )}
 
           <Switch
             value={device.status}
+            disabled={!gatewayConnected || pendingDeviceIds.includes(device.id)}
             onValueChange={(value) => {
               toggleDevice(device.id, value);
             }}
@@ -142,5 +148,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
   },
-
+  updatingText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: '#888',
+    marginTop: 3,
+  },
 });

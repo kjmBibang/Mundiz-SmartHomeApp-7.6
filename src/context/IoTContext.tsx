@@ -33,6 +33,8 @@ type IoTContextType = {
     devices: typeof devices;
     sensors: SensorData;
     toggleDevice: (id: number, value: boolean) => void;
+    gatewayConnected: boolean;
+    pendingDeviceID: number[];
 };
 
 const IoTContext = createContext<IoTContextType | undefined>(
@@ -44,7 +46,8 @@ export function IoTProvider({
 }: {
     children: React.ReactNode;
 }) {
-
+    const [gatewayConnected, setGatewayConnected] = useState(true);
+    const [pendingDeviceIds, setPendingDeviceIds] = useState<number[]>([]);
     const [deviceStatus, setDeviceStatus] = useState(
         devices.reduce((acc, device) => {
             acc[device.id] = device.status;
@@ -53,16 +56,21 @@ export function IoTProvider({
         }, {} as Record<number, boolean>)
     );
 
-    const toggleDevice = (
-        id: number,
-        value: boolean
-    ) => {
+    const toggleDevice = (id: number, value: boolean) => {
 
-        setDeviceStatus({
-            ...deviceStatus,
-            [id]: value,
-        });
-
+        setPendingDeviceIds((prev) => [...prev, id]);
+    
+        setTimeout(() => {
+            setDeviceStatus((prev) => ({
+                ...prev,
+                [id]: value,
+            }));
+    
+            setPendingDeviceIds((prev) =>
+                prev.filter((deviceId) => deviceId !== id)
+            );
+        }, 1200);
+    
     };
 
     const updatedDevices = devices.map((device) => ({
@@ -82,6 +90,8 @@ export function IoTProvider({
                 devices: updatedDevices,
                 sensors,
                 toggleDevice,
+                gatewayConnected,
+                pendingDeviceIds,
             }}
         >
             {children}
