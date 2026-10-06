@@ -3,12 +3,26 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  ScrollView, 
+  ActivityIndicator,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
+import { useIoT } from '../../context/IoTContext';
 
 export default function SensorsScreen() {
+
+  const { sensors, loading } = useIoT();
+
+  if (loading) {
+    return (
+      <View style = {styles.centered}>
+        <ActivityIndicator size = "large"/>
+        <Text>  Refreshing sensors...</Text>    
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
 
@@ -38,7 +52,7 @@ export default function SensorsScreen() {
         </View>
 
         <Text style={styles.sensorValue}>
-          28°C
+          {sensors?.temperature}°C
         </Text>
 
         <Text style={styles.sensorDescription}>
@@ -64,7 +78,7 @@ export default function SensorsScreen() {
         </View>
 
         <Text style={styles.sensorValue}>
-          65%
+          {sensors?.humidity}%
         </Text>
 
         <Text style={styles.sensorDescription}>
@@ -90,7 +104,7 @@ export default function SensorsScreen() {
         </View>
 
         <Text style={styles.sensorValue}>
-          720 lux
+          {sensors?.lightLevel} lux
         </Text>
 
         <Text style={styles.sensorDescription}>
@@ -150,4 +164,9 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
