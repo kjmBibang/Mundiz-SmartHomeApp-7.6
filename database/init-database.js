@@ -33,5 +33,17 @@ for (const device of seedDevices) {
   insertDevice.run(...device);
 }
 
+const sensorCount = db.prepare(
+  'SELECT COUNT(*) AS count FROM sensor_readings'
+).get().count;
+
+if (sensorCount === 0) {
+  db.prepare(`
+    INSERT INTO sensor_readings
+      (temperature, humidity, light_level, device_id, recorded_at)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(22.5, 45, 300, 1, new Date().toISOString());
+}
+
 db.close();
 console.log(`SQLite database ready: ${databasePath}`);
