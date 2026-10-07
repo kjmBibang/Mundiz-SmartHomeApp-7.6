@@ -1,27 +1,9 @@
 import { Device, SensorData } from '../models/IoTModels';
 
 let devices: Device[] = [
-  {
-    id: 1,
-    name: 'Living Room Light',
-    type: 'Smart Light',
-    icon: 'bulb-outline' as const,
-    status: true,
-  },
-  {
-    id: 2,
-    name: 'Bedroom Fan',
-    type: 'Smart Fan',
-    icon: 'sync-outline' as const,
-    status: false,
-  },
-  {
-    id: 3,
-    name: 'Front Door Lock',
-    type: 'Smart Lock',
-    icon: 'lock-closed-outline' as const,
-    status: true,
-  },
+  { id: 1, name: 'Living Room Light', type: 'Smart Light', icon: 'bulb-outline', status: true },
+  { id: 2, name: 'Bedroom Fan', type: 'Smart Fan', icon: 'sync-outline', status: false },
+  { id: 3, name: 'Front Door Lock', type: 'Smart Lock', icon: 'lock-closed-outline', status: true },
 ];
 
 const delay = (ms: number) =>
@@ -47,24 +29,18 @@ export async function getSensorData(): Promise<SensorData> {
 export async function getDevices(): Promise<Device[]> {
   await delay(1500);
   maybeFail();
-
-  return devices.map((d) => ({ ...d }));
+  return devices.map((device) => ({ ...device }));
 }
 
-export async function updateDeviceStatus(
-  id: number,
-  status: boolean
-): Promise<Device> {
+export async function updateDeviceStatus(id: number, status: boolean): Promise<Device> {
   await delay(1200);
   maybeFail();
 
-  const device = devices.find((d) => d.id === id);
-
+  const device = devices.find((item) => item.id === id);
   if (!device) {
     throw new Error(`Device ${id} not found`);
   }
 
   device.status = status;
-
   return { ...device };
 }
