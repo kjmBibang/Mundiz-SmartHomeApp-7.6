@@ -88,6 +88,23 @@ export default function DashboardScreen() {
                     </Text>
                 </View>
 
+                <View style={styles.sensorCard}>
+                    <View style={styles.sensorHeader}>
+                        <Ionicons
+                            name="sunny-outline"
+                            size={22}
+                        />
+
+                        <Text style={styles.sensorLabel}>
+                            Light Level 
+                        </Text>
+                    </View>
+
+                <Text style={styles.sensorValue}>
+                    {sensors.lightLevel} lux
+                </Text>
+
+            </View>
             </View>
 
             <Text style={styles.sectionTitle}>
