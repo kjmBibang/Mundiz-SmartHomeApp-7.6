@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView, 
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -12,13 +13,24 @@ import { useIoT } from '../../context/IoTContext';
 
 export default function SensorsScreen() {
 
-  const { sensors, loading } = useIoT();
+  const { sensors, sensorsLoading, sensorError, refresh } = useIoT();
 
-  if (loading) {
+  if (sensorsLoading) {
     return (
       <View style = {styles.centered}>
         <ActivityIndicator size = "large"/>
-        <Text>  Refreshing sensors...</Text>    
+        <Text>Refreshing Sensors...</Text>
+      </View>
+    );
+  }
+
+  if (sensorError || !sensors) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{sensorError ?? 'Unable to retrieve sensor data.'}</Text>
+        <TouchableOpacity onPress={refresh} style={styles.retryButton}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -168,5 +180,22 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  errorText: {
+    textAlign: 'center',
+  },
+
+  retryButton: {
+    marginTop: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#eeeeee',
+  },
+
+  retryText: {
+    color: '#0066cc',
+    fontWeight: 'bold',
   },
 });

@@ -12,9 +12,13 @@ export default function DashboardScreen() {
         loading,
         gatewayConnected,
         refresh,
+        sensorsLoading,
+        devicesLoading,
+        sensorError,
+        deviceError,
     } = useIoT();
 
-    if (loading) {
+    if (loading || sensorsLoading || devicesLoading) {
         return (
             <View style={[styles.container, styles.centered]}>
                 <ActivityIndicator size="large" />
@@ -23,13 +27,13 @@ export default function DashboardScreen() {
         );
     }
 
-    if (!sensors) {
+    if (sensorError || !sensors) {
     return (
         <View style={[styles.container, styles.centered]}>
             <Text>
-                {gatewayConnected
+            {sensorError ?? (gatewayConnected
                     ? 'No sensor data available.'
-                    : 'Gateway disconnected — unable to load sensor data.'}
+                : 'IoT Gateway is disconnected.')}
             </Text>
             <TouchableOpacity onPress={refresh} style={{ marginTop: 12 }}>
                 <Text style={{ color: 'blue' }}>Retry</Text>
@@ -89,6 +93,18 @@ export default function DashboardScreen() {
             <Text style={styles.sectionTitle}>
                 Device Status
             </Text>
+
+            {!gatewayConnected && (
+                <Text style={styles.errorText}>IoT Gateway is disconnected.</Text>
+            )}
+            {deviceError && (
+                <View>
+                    <Text style={styles.errorText}>{deviceError}</Text>
+                    <TouchableOpacity onPress={refresh}>
+                        <Text style={{ color: 'blue', marginBottom: 12 }}>Retry</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
             {devices.map((device) => (
 
@@ -228,6 +244,11 @@ const styles = StyleSheet.create({
 
     deviceState: {
 
+    },
+
+    errorText: {
+        color: '#b00020',
+        marginBottom: 8,
     },
 
 });

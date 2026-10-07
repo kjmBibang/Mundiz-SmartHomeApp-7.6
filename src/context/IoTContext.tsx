@@ -10,10 +10,14 @@ import * as IoTService from '../services/IoTService';
 type IoTContextType = {
     devices: Device[];
     sensors: SensorData | null;
-    toggleDevice: (id: number, value: boolean) => void;
+    toggleDevice: (id: number, value: boolean) => Promise<void>;
     gatewayConnected: boolean;
     pendingDeviceIds: number[];
     loading: boolean;
+    sensorsLoading: boolean;
+    devicesLoading: boolean;
+    sensorError: string | null;
+    deviceError: string | null;
     refresh: () => void;
 };
 
@@ -25,27 +29,14 @@ export function IoTProvider({ children }: { children: React.ReactNode }) {
     const [pendingDeviceIds, setPendingDeviceIds] = useState<number[]>([]);
     const [gatewayConnected, setGatewayConnected] = useState(true);
     const [loading, setLoading] = useState(true);
+    const [sensorsLoading, setSensorsLoading] = useState(true);
+    const [devicesLoading, setDevicesLoading] = useState(true);
+    const [sensorError, setSensorError] = useState<string | null>(null);
+    const [deviceError, setDeviceError] = useState<string | null>(null);
 
-    /*useEffect(() => {
-        (async () => {
-            try {
-                const [deviceList, sensorData] = await Promise.all([
-                    IoTService.getDevices(),
-                    IoTService.getSensorData(),
-                ]);
-                setDevices(deviceList);
-                setSensors(sensorData);
-                setGatewayConnected(true);
-            } catch (err) {
-                setGatewayConnected(false);
-            } finally {
-                setLoading(false);
-            }
-        })();
-    }, []);
-*/
     const toggleDevice = async (id: number, value: boolean) => {
         setPendingDeviceIds((prev) => [...prev, id]);
+        setDeviceError(null);
 
         try {
             const updated = await IoTService.updateDeviceStatus(id, value);
@@ -55,7 +46,8 @@ export function IoTProvider({ children }: { children: React.ReactNode }) {
             );
             setGatewayConnected(true);
         } catch (err) {
-        
+            const device = devices.find((item) => item.id === id);
+            setDeviceError(`Unable to update ${device?.name ?? 'device'}.`);
             setGatewayConnected(false);
         } finally {
             setPendingDeviceIds((prev) => prev.filter((d) => d !== id));
@@ -64,7 +56,11 @@ export function IoTProvider({ children }: { children: React.ReactNode }) {
 
     const loadData = async () => {
         setLoading(true);
-    
+        setSensorsLoading(true);
+        setDevicesLoading(true);
+        setSensorError(null);
+        setDeviceError(null);
+
         const results = await Promise.allSettled([
             IoTService.getDevices(),
             IoTService.getSensorData(),
@@ -74,10 +70,14 @@ export function IoTProvider({ children }: { children: React.ReactNode }) {
     
         if (devicesResult.status === 'fulfilled') {
             setDevices(devicesResult.value);
+        } else {
+            setDeviceError('Unable to retrieve devices.');
         }
     
         if (sensorsResult.status === 'fulfilled') {
             setSensors(sensorsResult.value);
+        } else {
+            setSensorError('Unable to retrieve sensor data.');
         }
     
         const bothFailed =
@@ -85,6 +85,8 @@ export function IoTProvider({ children }: { children: React.ReactNode }) {
             sensorsResult.status === 'rejected';
     
         setGatewayConnected(!bothFailed);
+        setDevicesLoading(false);
+        setSensorsLoading(false);
         setLoading(false);
     };
     
@@ -101,6 +103,10 @@ export function IoTProvider({ children }: { children: React.ReactNode }) {
                 gatewayConnected,
                 pendingDeviceIds,
                 loading,
+                sensorsLoading,
+                devicesLoading,
+                sensorError,
+                deviceError,
                 refresh: loadData,
             }}
         >

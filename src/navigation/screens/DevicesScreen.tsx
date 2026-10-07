@@ -6,6 +6,8 @@ import {
   StyleSheet,
   ScrollView,
   Switch,
+  ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -19,7 +21,19 @@ export default function DevicesScreen() {
     toggleDevice,
     gatewayConnected,
     pendingDeviceIds,
+    devicesLoading,
+    deviceError,
+    refresh,
   } = useIoT();
+
+  if (devicesLoading) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.loadingText}>Loading devices...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -31,6 +45,18 @@ export default function DevicesScreen() {
       <Text style={styles.subtitle}>
         Control your connected devices
       </Text>
+
+      {!gatewayConnected && (
+        <Text style={styles.errorText}>IoT Gateway is disconnected.</Text>
+      )}
+      {deviceError && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{deviceError}</Text>
+          <TouchableOpacity onPress={refresh}>
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {devices.map((device) => (
 
@@ -153,5 +179,23 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: '#888',
     marginTop: 3,
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+  },
+  errorContainer: {
+    marginBottom: 16,
+  },
+  errorText: {
+    color: '#b00020',
+    marginBottom: 8,
+  },
+  retryText: {
+    color: '#0066cc',
+    fontWeight: 'bold',
   },
 });
